@@ -1,0 +1,2921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>琳琳的惊喜</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <!-- GSAP 动画库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF69B4', // 粉色
+                        secondary: '#9370DB', // 紫色
+                        accent: '#FFB6C1', // 浅粉色
+                        light: '#FFF0F5', // 淡粉色
+                        dark: '#4B0082', // 深紫色
+                    },
+                    fontFamily: {
+                        sans: ['Arial', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .text-shadow-lg {
+                text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+            }
+            .bg-blur {
+                backdrop-filter: blur(8px);
+            }
+            .heart-beat {
+                animation: heartbeat 1.5s ease-in-out infinite;
+            }
+            @keyframes heartbeat {
+                0% { transform: scale(1); }
+                14% { transform: scale(1.1); }
+                28% { transform: scale(1); }
+                42% { transform: scale(1.15); }
+                70% { transform: scale(1); }
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            .gradient-text {
+                background: linear-gradient(90deg, #FF69B4, #9370DB);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+        }
+    </style>
+    
+    <style>
+        body {
+            background-color: #FFF0F5;
+            background-image: url('https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/ef77e284bc2e49df8087d14b4171bd38~tplv-a9rns2rl98-image.image?rcl=20251110202603EDE650AEE688A59E2299&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1765369580&x-signature=eqDtOnpRb1t6qYAXwtCSWLCpyU8%3D');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* 星星和流星雨效果 */
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 5s infinite ease-in-out;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        .meteor {
+            position: absolute;
+            width: 2px;
+            background: linear-gradient(90deg, transparent, white);
+            animation: meteor 3s linear infinite;
+        }
+        
+        @keyframes meteor {
+            0% {
+                transform: translateX(0) translateY(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-1000px) translateY(1000px);
+                opacity: 0;
+            }
+        }
+        
+        .heart {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FF69B4;
+            transform: rotate(45deg);
+            animation: float 3s infinite ease-in-out;
+        }
+        
+        .heart:before, .heart:after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #FF69B4;
+            border-radius: 50%;
+        }
+        
+        .heart:before {
+            top: -10px;
+            left: 0;
+        }
+        
+        .heart:after {
+            top: 0;
+            left: -10px;
+        }
+        
+        #heartContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+        
+        .section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .photo-frame {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .photo-frame img {
+            display: block;
+            border-radius: 8px;
+        }
+        
+        .photo-frame::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background-image: url('https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/b0804c56b9d44d879667b853c27b3bf1~tplv-a9rns2rl98-image.image?rcl=20251110200546C43D08EB6DBCF40C6DD1&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1765368370&x-signature=ty0veJyi7AmWmezUFuHDabguGeQ%3D');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: -1;
+        }
+        
+        .mood-icon {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .mood-icon:hover {
+            transform: scale(1.2);
+        }
+        
+        .mood-icon.selected {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px #FF69B4;
+            border-radius: 50%;
+        }
+        
+        .chat-bubble {
+            position: relative;
+            padding: 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .chat-bubble.sent {
+            background-color: #FFB6C1;
+            margin-left: auto;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .chat-bubble.received {
+            background-color: #E6E6FA;
+            margin-right: auto;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #FF69B4, #9370DB);
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #FF69B4;
+            opacity: 0;
+            animation: confetti-fall 3s linear forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        #confettiContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        /* 3D 效果容器 */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="font-sans text-gray-800">
+    <!-- 3D 背景容器 -->
+    <div id="canvas-container"></div>
+    
+    <!-- 星星背景容器 -->
+    <div id="stars-container"></div>
+    
+    <!-- 爱心动画容器 -->
+    <div id="heartContainer"></div>
+    
+    <!-- 庆祝效果容器 -->
+    <div id="confettiContainer"></div>
+    
+    <!-- 音频元素 -->
+    <audio id="background-music" loop muted autoplay style="display: none;">
+        <source src="proxy.php" type="audio/mpeg">
+    </audio>
+    
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white bg-opacity-90 bg-blur sticky top-0 z-50 shadow-md rounded-b-3xl">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center shadow-lg">
+                    <i class="fa fa-heart text-white text-2xl heart-beat"></i>
+                </div>
+                <h1 class="text-2xl font-bold gradient-text">琳琳的惊喜</h1>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#home" class="text-gray-700 hover:text-primary transition-colors duration-300 font-medium flex items-center">
+                    <i class="fa fa-home mr-1"></i> 首页
+                </a>
+                <a href="#messages" class="text-gray-700 hover:text-primary transition-colors duration-300 font-medium flex items-center">
+                    <i class="fa fa-comment mr-1"></i> 暖心话语
+                </a>
+                <a href="#jokes" class="text-gray-700 hover:text-primary transition-colors duration-300 font-medium flex items-center">
+                    <i class="fa fa-smile-o mr-1"></i> 幽默笑话
+                </a>
+                <a href="#questions" class="text-gray-700 hover:text-primary transition-colors duration-300 font-medium flex items-center">
+                    <i class="fa fa-question-circle mr-1"></i> 互动问答
+                </a>
+                <a href="#diary" class="text-gray-700 hover:text-primary transition-colors duration-300 font-medium flex items-center">
+                    <i class="fa fa-book mr-1"></i> 心情日记
+                </a>
+                <a href="#photos" class="text-gray-700 hover:text-primary transition-colors duration-300 font-medium flex items-center">
+                    <i class="fa fa-camera mr-1"></i> 照片墙
+                </a>
+                <a href="#personality" class="text-gray-700 hover:text-primary transition-colors duration-300 font-medium flex items-center">
+                    <i class="fa fa-star mr-1"></i> 性格测试
+                </a>
+                <a href="#fun" class="text-gray-700 hover:text-primary transition-colors duration-300 font-medium flex items-center">
+                    <i class="fa fa-gamepad mr-1"></i> 趣味互动
+                </a>
+                <button id="music-toggle" class="bg-primary bg-opacity-10 text-primary p-2 rounded-full hover:bg-opacity-20 transition-colors">
+                    <i class="fa fa-music"></i>
+                </button>
+            </div>
+            
+            <div class="md:hidden flex items-center space-x-3">
+                <button id="mobile-music-toggle" class="bg-primary bg-opacity-10 text-primary p-2 rounded-full hover:bg-opacity-20 transition-colors">
+                    <i class="fa fa-music"></i>
+                </button>
+                <button id="mobile-menu-button" class="text-gray-700 hover:text-primary focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg absolute w-full rounded-b-3xl">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-2">
+                <a href="#home" class="text-gray-700 hover:text-primary transition-colors duration-300 py-3 px-4 rounded-lg hover:bg-light flex items-center">
+                    <i class="fa fa-home mr-2 w-5 text-center"></i> 首页
+                </a>
+                <a href="#messages" class="text-gray-700 hover:text-primary transition-colors duration-300 py-3 px-4 rounded-lg hover:bg-light flex items-center">
+                    <i class="fa fa-comment mr-2 w-5 text-center"></i> 暖心话语
+                </a>
+                <a href="#jokes" class="text-gray-700 hover:text-primary transition-colors duration-300 py-3 px-4 rounded-lg hover:bg-light flex items-center">
+                    <i class="fa fa-smile-o mr-2 w-5 text-center"></i> 幽默笑话
+                </a>
+                <a href="#questions" class="text-gray-700 hover:text-primary transition-colors duration-300 py-3 px-4 rounded-lg hover:bg-light flex items-center">
+                    <i class="fa fa-question-circle mr-2 w-5 text-center"></i> 互动问答
+                </a>
+                <a href="#diary" class="text-gray-700 hover:text-primary transition-colors duration-300 py-3 px-4 rounded-lg hover:bg-light flex items-center">
+                    <i class="fa fa-book mr-2 w-5 text-center"></i> 心情日记
+                </a>
+                <a href="#photos" class="text-gray-700 hover:text-primary transition-colors duration-300 py-3 px-4 rounded-lg hover:bg-light flex items-center">
+                    <i class="fa fa-camera mr-2 w-5 text-center"></i> 照片墙
+                </a>
+                <a href="#personality" class="text-gray-700 hover:text-primary transition-colors duration-300 py-3 px-4 rounded-lg hover:bg-light flex items-center">
+                    <i class="fa fa-star mr-2 w-5 text-center"></i> 性格测试
+                </a>
+                <a href="#fun" class="text-gray-700 hover:text-primary transition-colors duration-300 py-3 px-4 rounded-lg hover:bg-light flex items-center">
+                    <i class="fa fa-gamepad mr-2 w-5 text-center"></i> 趣味互动
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 首页/欢迎区域 -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center py-16 px-4">
+        <div class="container mx-auto text-center">
+            <div class="mb-8 animate-float">
+                <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/6570c351113547489992a35571ad7712~tplv-a9rns2rl98-image.image?rcl=202511102019348262C5E6C6649F9E1E04&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1765369207&x-signature=wjmxetc4pqp8bmvbGvCTPtkBb1Q%3D" 
+                     alt="琳琳的惊喜" 
+                     class="w-full max-w-md mx-auto rounded-xl shadow-2xl">
+            </div>
+            
+            <h1 class="text-4xl md:text-5xl font-bold mb-6 text-shadow-lg">
+                <span class="gradient-text">嗨，琳琳！</span>
+            </h1>
+            
+            <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto text-gray-700">
+                这是一个专门为你打造的小天地，希望能给你带来快乐和温暖 ❤️
+            </p>
+            
+            <div class="flex flex-col md:flex-row justify-center gap-4">
+                <button id="start-journey-btn" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                    开始探索 <i class="fa fa-arrow-right ml-2"></i>
+                </button>
+                
+                <button id="surprise-btn" class="bg-white text-primary border-2 border-primary font-bold py-3 px-8 rounded-full shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300">
+                    惊喜彩蛋 <i class="fa fa-gift ml-2"></i>
+                </button>
+            </div>
+            
+            <div class="mt-16">
+                <div class="inline-block bg-white bg-opacity-70 backdrop-blur-sm rounded-full px-6 py-3 shadow-md">
+                    <div class="flex items-center space-x-2 mb-2">
+                        <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm font-medium">心动指数</span>
+                    </div>
+                    <div class="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div id="affection-meter" class="progress-bar w-1/4"></div>
+                    </div>
+                    <div class="text-right text-xs text-gray-500 mt-1">当前: <span id="affection-value">25%</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 暖心话语区域 -->
+    <section id="messages" class="py-16 px-4 section">
+        <div class="container mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4 gradient-text">暖心话语</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">每天都想告诉你一些甜蜜的小事，希望这些话语能让你感受到我的心意</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 max-w-3xl mx-auto">
+                <div id="message-display" class="min-h-[200px] flex items-center justify-center mb-6 p-4 bg-light rounded-xl">
+                    <p class="text-center text-gray-600" id="current-message">
+                        点击下方按钮，获取今日的暖心话语 ❤️
+                    </p>
+                </div>
+                
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <button class="message-btn bg-primary bg-opacity-10 text-primary px-4 py-2 rounded-full text-sm hover:bg-opacity-20 transition-colors" data-category="sweet">甜蜜</button>
+                    <button class="message-btn bg-secondary bg-opacity-10 text-secondary px-4 py-2 rounded-full text-sm hover:bg-opacity-20 transition-colors" data-category="cute">可爱</button>
+                    <button class="message-btn bg-purple-400 bg-opacity-10 text-purple-400 px-4 py-2 rounded-full text-sm hover:bg-opacity-20 transition-colors" data-category="romantic">浪漫</button>
+                    <button class="message-btn bg-pink-300 bg-opacity-10 text-pink-300 px-4 py-2 rounded-full text-sm hover:bg-opacity-20 transition-colors" data-category="encouraging">鼓励</button>
+                </div>
+                
+                <div class="flex justify-between">
+                    <button id="prev-message" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                        <i class="fa fa-arrow-left mr-2"></i> 上一条
+                    </button>
+                    
+                    <button id="random-message" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                        随机一条 <i class="fa fa-random ml-2"></i>
+                    </button>
+                    
+                    <button id="next-message" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors">
+                        下一条 <i class="fa fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-8">
+                    <h3 class="font-medium mb-3">添加自己的暖心话语:</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="custom-message" placeholder="输入你想对琳琳说的话..." class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <button id="add-message" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                            添加 <i class="fa fa-plus ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 幽默笑话区域 -->
+    <section id="jokes" class="py-16 px-4 bg-light section">
+        <div class="container mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4 gradient-text">幽默笑话</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">笑一笑，十年少！希望这些笑话能让你开怀大笑 😄</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 max-w-3xl mx-auto">
+                <div id="joke-display" class="min-h-[150px] flex items-center justify-center mb-8 p-6 bg-light rounded-xl">
+                    <p class="text-center text-gray-600" id="current-joke">
+                        点击下方按钮，获取今日的笑话 😊
+                    </p>
+                </div>
+                
+                <div class="flex justify-center">
+                    <button id="random-joke" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                        再来一个笑话 <i class="fa fa-smile-o ml-2"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-8">
+                    <div class="flex items-center mb-4">
+                        <div class="flex items-center">
+                            <i class="fa fa-star text-yellow-400"></i>
+                            <i class="fa fa-star text-yellow-400"></i>
+                            <i class="fa fa-star text-yellow-400"></i>
+                            <i class="fa fa-star text-yellow-400"></i>
+                            <i class="fa fa-star text-yellow-400"></i>
+                        </div>
+                        <span class="ml-2 text-gray-600" id="joke-rating">这个笑话好笑吗？</span>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button class="rating-btn flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors" data-rating="funny">
+                            <i class="fa fa-thumbs-up mr-2"></i> 好笑
+                        </button>
+                        <button class="rating-btn flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors" data-rating="not-funny">
+                            <i class="fa fa-thumbs-down mr-2"></i> 一般
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 互动问答区域 -->
+    <section id="questions" class="py-16 px-4 section">
+        <div class="container mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4 gradient-text">互动问答</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">想更多地了解你，也希望你能了解我 😊</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 max-w-3xl mx-auto">
+                <div class="mb-8">
+                    <h3 class="font-bold text-xl mb-4" id="question-text">点击下方按钮开始问答吧！</h3>
+                    
+                    <div id="answer-options" class="hidden space-y-3 mb-6">
+                        <!-- 选项将通过 JavaScript 动态添加 -->
+                    </div>
+                    
+                    <div id="custom-answer-container" class="hidden mb-6">
+                        <textarea id="custom-answer" placeholder="写下你的回答..." class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between">
+                    <button id="prev-question" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors" disabled>
+                        <i class="fa fa-arrow-left mr-2"></i> 上一题
+                    </button>
+                    
+                    <button id="next-question" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                        开始问答 <i class="fa fa-play ml-2"></i>
+                    </button>
+                    
+                    <button id="submit-answer" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-colors" disabled>
+                        提交 <i class="fa fa-check ml-2"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="font-medium mb-4">查看历史回答:</h3>
+                    <div id="answers-history" class="max-h-[200px] overflow-y-auto p-4 bg-light rounded-xl">
+                        <p class="text-center text-gray-500">暂无回答记录</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 心情日记区域 -->
+    <section id="diary" class="py-16 px-4 bg-light section">
+        <div class="container mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4 gradient-text">心情日记</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">记录每天的心情，分享生活中的点滴 ✨</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 max-w-3xl mx-auto">
+                <div class="mb-6">
+                    <h3 class="font-medium mb-3">今天心情如何？</h3>
+                    <div class="flex justify-center gap-6">
+                        <div class="mood-icon flex flex-col items-center" data-mood="happy">
+                            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/a2bd76fc2a864549bd71d9d03da58629~tplv-a9rns2rl98-image.image?rcl=20251110200546C43D08EB6DBCF40C6DD1&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1765368371&x-signature=OxXv6yxUryTSDzKVKz4edrS7%2BCE%3D" alt="开心" class="w-16 h-16">
+                            <span class="mt-2 text-sm">开心</span>
+                        </div>
+                        <div class="mood-icon flex flex-col items-center" data-mood="shy">
+                            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/a2bd76fc2a864549bd71d9d03da58629~tplv-a9rns2rl98-image.image?rcl=20251110200546C43D08EB6DBCF40C6DD1&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1765368371&x-signature=OxXv6yxUryTSDzKVKz4edrS7%2BCE%3D" alt="害羞" class="w-16 h-16">
+                            <span class="mt-2 text-sm">害羞</span>
+                        </div>
+                        <div class="mood-icon flex flex-col items-center" data-mood="excited">
+                            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/a2bd76fc2a864549bd71d9d03da58629~tplv-a9rns2rl98-image.image?rcl=20251110200546C43D08EB6DBCF40C6DD1&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1765368371&x-signature=OxXv6yxUryTSDzKVKz4edrS7%2BCE%3D" alt="兴奋" class="w-16 h-16">
+                            <span class="mt-2 text-sm">兴奋</span>
+                        </div>
+                        <div class="mood-icon flex flex-col items-center" data-mood="love">
+                            <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/a2bd76fc2a864549bd71d9d03da58629~tplv-a9rns2rl98-image.image?rcl=20251110200546C43D08EB6DBCF40C6DD1&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1765368371&x-signature=OxXv6yxUryTSDzKVKz4edrS7%2BCE%3D" alt="爱心" class="w-16 h-16">
+                            <span class="mt-2 text-sm">爱心</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-medium mb-3">今日记录:</h3>
+                    <textarea id="diary-entry" placeholder="今天发生了什么有趣的事情？写下你的想法..." class="w-full h-32 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button id="save-diary" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                        保存日记 <i class="fa fa-save ml-2"></i>
+                    </button>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h3 class="font-medium mb-4">心情记录:</h3>
+                    <div class="grid grid-cols-7 gap-2 mb-4">
+                        <div class="text-center text-xs text-gray-500">日</div>
+                        <div class="text-center text-xs text-gray-500">一</div>
+                        <div class="text-center text-xs text-gray-500">二</div>
+                        <div class="text-center text-xs text-gray-500">三</div>
+                        <div class="text-center text-xs text-gray-500">四</div>
+                        <div class="text-center text-xs text-gray-500">五</div>
+                        <div class="text-center text-xs text-gray-500">六</div>
+                        
+                        <!-- 日历格子将通过 JavaScript 动态添加 -->
+                    </div>
+                    
+                    <div class="mt-6">
+                        <canvas id="mood-chart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 照片墙区域 -->
+    <section id="photos" class="py-16 px-4 section">
+        <div class="container mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4 gradient-text">照片墙</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">记录美好瞬间，分享快乐时光 📸</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 max-w-4xl mx-auto">
+                <div class="mb-8">
+                    <div class="flex justify-center mb-6">
+                        <button id="upload-photo" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                            <i class="fa fa-upload mr-2"></i> 上传照片
+                        </button>
+                        <input type="file" id="photo-input" accept="image/*" class="hidden">
+                    </div>
+                    
+                    <div id="photo-preview" class="hidden mb-6 text-center">
+                        <h3 class="font-medium mb-3">预览:</h3>
+                        <img id="preview-image" src="" alt="预览" class="max-w-full max-h-64 mx-auto rounded-lg">
+                    </div>
+                    
+                    <div id="photo-caption-container" class="hidden mb-6">
+                        <input type="text" id="photo-caption" placeholder="添加 caption..." class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-8" id="photo-gallery">
+                    <!-- 照片将通过 JavaScript 动态添加 -->
+                    <div class="text-center col-span-full text-gray-500 py-8">
+                        暂无照片，上传第一张照片吧！
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 性格测试区域 -->
+    <section id="personality" class="py-16 px-4 section">
+        <div class="container mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4 gradient-text">性格测试</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">想知道你是什么样的性格类型吗？来测试一下吧！</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8 max-w-3xl mx-auto">
+                <div id="personality-test-container">
+                    <div id="test-start" class="text-center py-8">
+                        <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/a2bd76fc2a864549bd71d9d03da58629~tplv-a9rns2rl98-image.image?rcl=20251110200546C43D08EB6DBCF40C6DD1&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1765368371&x-signature=OxXv6yxUryTSDzKVKz4edrS7%2BCE%3D" alt="性格测试" class="w-32 h-32 mx-auto mb-6">
+                        <h3 class="text-xl font-bold mb-4">趣味性格测试</h3>
+                        <p class="text-gray-600 mb-6">回答几个简单的问题，看看你是什么样的性格类型！</p>
+                        <button id="start-test" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 px-8 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                            开始测试 <i class="fa fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="test-questions" class="hidden">
+                        <div class="mb-4 flex justify-between items-center">
+                            <h3 class="font-bold text-lg" id="question-text-personality">问题 1/5</h3>
+                            <span class="text-sm text-gray-500" id="question-progress">1/5</span>
+                        </div>
+                        
+                        <div id="personality-question-content" class="mb-6 p-4 bg-light rounded-xl">
+                            <!-- 问题内容将通过 JavaScript 动态添加 -->
+                        </div>
+                        
+                        <div id="personality-options" class="space-y-3 mb-8">
+                            <!-- 选项将通过 JavaScript 动态添加 -->
+                        </div>
+                        
+                        <div class="flex justify-between">
+                            <button id="prev-personality-question" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors" disabled>
+                                <i class="fa fa-arrow-left mr-2"></i> 上一题
+                            </button>
+                            
+                            <button id="next-personality-question" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                                下一题 <i class="fa fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="test-result" class="hidden text-center py-8">
+                        <div id="result-icon" class="w-32 h-32 mx-auto mb-6 flex items-center justify-center rounded-full bg-gradient-to-r from-primary to-secondary">
+                            <!-- 结果图标将通过 JavaScript 动态添加 -->
+                        </div>
+                        
+                        <h3 class="text-2xl font-bold mb-2" id="result-title">测试结果</h3>
+                        <p class="text-xl mb-6" id="result-type">你是...</p>
+                        
+                        <div class="mb-8 p-6 bg-light rounded-xl text-left">
+                            <p class="mb-4" id="result-description">
+                                <!-- 结果描述将通过 JavaScript 动态添加 -->
+                            </p>
+                            
+                            <div class="grid grid-cols-2 gap-4 mt-6">
+                                <div class="p-4 bg-white rounded-lg shadow-sm">
+                                    <h4 class="font-medium mb-2 text-primary">优点</h4>
+                                    <ul class="list-disc list-inside text-gray-700" id="result-strengths">
+                                        <!-- 优点将通过 JavaScript 动态添加 -->
+                                    </ul>
+                                </div>
+                                
+                                <div class="p-4 bg-white rounded-lg shadow-sm">
+                                    <h4 class="font-medium mb-2 text-secondary">适合的礼物</h4>
+                                    <ul class="list-disc list-inside text-gray-700" id="result-gifts">
+                                        <!-- 适合的礼物将通过 JavaScript 动态添加 -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-center space-x-4">
+                            <button id="retry-test" class="bg-white text-primary border-2 border-primary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                                重新测试 <i class="fa fa-refresh ml-2"></i>
+                            </button>
+                            
+                            <button id="share-result" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                                分享结果 <i class="fa fa-share-alt ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 趣味互动区域 -->
+    <section id="fun" class="py-16 px-4 bg-light section">
+        <div class="container mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4 gradient-text">趣味互动</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">来玩一些有趣的小游戏，放松一下心情吧！</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <!-- 数字配对游戏 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                            <i class="fa fa-puzzle-piece text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">数字配对</h3>
+                        <p class="text-gray-600 mt-2">找出相同的数字对，锻炼记忆力</p>
+                    </div>
+                    
+                    <div id="memory-game" class="grid grid-cols-3 gap-3 mb-6">
+                        <!-- 卡片将通过 JavaScript 动态添加 -->
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="font-medium">得分: </span>
+                            <span id="memory-score">0</span>
+                        </div>
+                        
+                        <button id="start-memory-game" class="bg-gradient-to-r from-primary to-secondary text-white font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                            开始游戏
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 真心话大冒险 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                            <i class="fa fa-comment text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">真心话大冒险</h3>
+                        <p class="text-gray-600 mt-2">随机抽取真心话或大冒险任务</p>
+                    </div>
+                    
+                    <div class="mb-6 p-6 bg-light rounded-xl min-h-[150px] flex items-center justify-center">
+                        <p class="text-center text-gray-600" id="truth-dare-text">
+                            点击下方按钮开始
+                        </p>
+                    </div>
+                    
+                    <div class="flex justify-center space-x-4">
+                        <button id="truth-btn" class="bg-white text-primary border-2 border-primary font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                            真心话
+                        </button>
+                        
+                        <button id="dare-btn" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                            大冒险
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 星座配对 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                            <i class="fa fa-star text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">星座配对</h3>
+                        <p class="text-gray-600 mt-2">测试你和赵志远的星座匹配度</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2">你的星座</label>
+                            <select id="your-zodiac" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="">请选择</option>
+                                <option value="aries">白羊座</option>
+                                <option value="taurus">金牛座</option>
+                                <option value="gemini">双子座</option>
+                                <option value="cancer">巨蟹座</option>
+                                <option value="leo">狮子座</option>
+                                <option value="virgo">处女座</option>
+                                <option value="libra">天秤座</option>
+                                <option value="scorpio">天蝎座</option>
+                                <option value="sagittarius">射手座</option>
+                                <option value="capricorn">摩羯座</option>
+                                <option value="aquarius">水瓶座</option>
+                                <option value="pisces">双鱼座</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 mb-2">赵志远的星座</label>
+                            <select id="his-zodiac" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="">请选择</option>
+                                <option value="aries">白羊座</option>
+                                <option value="taurus">金牛座</option>
+                                <option value="gemini">双子座</option>
+                                <option value="cancer">巨蟹座</option>
+                                <option value="leo">狮子座</option>
+                                <option value="virgo">处女座</option>
+                                <option value="libra">天秤座</option>
+                                <option value="scorpio">天蝎座</option>
+                                <option value="sagittarius">射手座</option>
+                                <option value="capricorn">摩羯座</option>
+                                <option value="aquarius">水瓶座</option>
+                                <option value="pisces">双鱼座</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6 p-4 bg-light rounded-xl hidden" id="zodiac-result">
+                        <div class="flex items-center justify-center mb-4">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                                <span class="text-white text-xl font-bold" id="zodiac-percentage">0%</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-center text-gray-700" id="zodiac-description">
+                            <!-- 配对描述将通过 JavaScript 动态添加 -->
+                        </p>
+                    </div>
+                    
+                    <div class="flex justify-center">
+                        <button id="match-zodiac" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                            开始配对
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 幸运签 -->
+                <div class="bg-white rounded-2xl shadow-lg p-6 card-hover">
+                    <div class="text-center mb-6">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                            <i class="fa fa-ticket text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">今日幸运签</h3>
+                        <p class="text-gray-600 mt-2">抽取你的今日幸运签，看看运势如何</p>
+                    </div>
+                    
+                    <div class="mb-6 p-6 bg-light rounded-xl min-h-[150px] flex items-center justify-center">
+                        <div id="fortune-scroll" class="text-center">
+                            <p class="text-gray-600">点击下方按钮抽取</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-center">
+                        <button id="draw-fortune" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                            抽取幸运签
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 底部区域 -->
+    <footer class="bg-gradient-to-r from-primary to-secondary text-white py-8 px-4">
+        <div class="container mx-auto">
+            <div class="text-center">
+                <h2 class="text-2xl font-bold mb-4">琳琳的惊喜</h2>
+                <p class="mb-6">希望这个小网站能给你带来快乐和温暖 ❤️</p>
+                
+                <div class="flex justify-center space-x-4 mb-8">
+                    <a href="#" class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                        <i class="fa fa-heart"></i>
+                    </a>
+                    <a href="#" class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                        <i class="fa fa-star"></i>
+                    </a>
+                    <a href="#" class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                        <i class="fa fa-gift"></i>
+                    </a>
+                    <a href="#" class="bg-white bg-opacity-20 hover:bg-opacity-30 w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                        <i class="fa fa-smile-o"></i>
+                    </a>
+                </div>
+                
+                <p class="text-sm text-white text-opacity-80">
+                    制作于 <span id="current-year"></span> | 专为琳琳打造
+                </p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- 惊喜弹窗 -->
+    <div id="surprise-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-md w-full mx-4 transform transition-all">
+            <div class="text-center">
+                <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
+                    <i class="fa fa-gift text-white text-4xl"></i>
+                </div>
+                
+                <h3 class="text-2xl font-bold mb-4">惊喜！</h3>
+                
+                <p class="text-gray-600 mb-6" id="surprise-message">
+                    你发现了一个隐藏的惊喜！
+                </p>
+                
+                <div class="flex justify-center">
+                    <button id="close-surprise" class="bg-gradient-to-r from-primary to-secondary text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all">
+                        收下惊喜 <i class="fa fa-heart ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 趣味互动游戏数据
+        const memoryCards = [1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6];
+        const truthQuestions = [
+            "你最难忘的一次旅行是什么时候？",
+            "如果你可以拥有一种超能力，你会选择什么？",
+            "你最喜欢的电影是什么？为什么？",
+            "你童年时的梦想是什么？",
+            "你最近学到了什么新东西？",
+            "你最喜欢的季节是什么？为什么？",
+            "如果你可以和任何人共进晚餐，你会选择谁？",
+            "你最引以为豪的成就是什么？",
+            "你喜欢什么样的音乐？为什么？",
+            "你最近看的一本书是什么？"
+        ];
+        
+        const dareTasks = [
+            "唱一首你最喜欢的歌，至少唱30秒",
+            "做一个你最擅长的表情包",
+            "模仿你最喜欢的动物叫声",
+            "用三种不同的语言说'我爱你'",
+            "跳一段你最喜欢的舞蹈",
+            "给我们讲一个你最拿手的笑话",
+            "用肢体语言表达一个成语，让大家猜",
+            "模仿一位名人的说话方式",
+            "做10个俯卧撑（或者其他简单的运动）",
+            "给我们表演一段即兴小品"
+        ];
+        
+        const zodiacMatches = {
+            aries: {
+                aries: { percent: 80, desc: "两个白羊座在一起会充满激情和活力，但也可能会有冲突。" },
+                taurus: { percent: 70, desc: "白羊座和金牛座可以互补，但需要双方都做出一些让步。" },
+                gemini: { percent: 90, desc: "白羊座和双子座是天造地设的一对，充满乐趣和冒险精神。" },
+                cancer: { percent: 60, desc: "白羊座和巨蟹座需要更多的理解和沟通才能相处融洽。" },
+                leo: { percent: 95, desc: "白羊座和狮子座是完美的组合，充满激情和创造力。" },
+                virgo: { percent: 75, desc: "白羊座和处女座可以互相学习，但需要更多的耐心。" },
+                libra: { percent: 85, desc: "白羊座和天秤座是很好的搭配，互相吸引。" },
+                scorpio: { percent: 80, desc: "白羊座和天蝎座充满激情，但也需要注意控制情绪。" },
+                sagittarius: { percent: 90, desc: "白羊座和射手座是天生的一对，充满冒险精神。" },
+                capricorn: { percent: 70, desc: "白羊座和摩羯座需要更多的理解和妥协。" },
+                aquarius: { percent: 85, desc: "白羊座和水瓶座是很好的朋友和伴侣。" },
+                pisces: { percent: 65, desc: "白羊座和双鱼座需要更多的沟通和理解。" }
+            },
+            taurus: {
+                aries: { percent: 70, desc: "金牛座和白羊座可以互补，但需要双方都做出一些让步。" },
+                taurus: { percent: 85, desc: "两个金牛座在一起会很稳定，但可能会缺乏激情。" },
+                gemini: { percent: 75, desc: "金牛座和双子座需要更多的理解和沟通。" },
+                cancer: { percent: 90, desc: "金牛座和巨蟹座是很配的一对，充满温暖和安全感。" },
+                leo: { percent: 70, desc: "金牛座和狮子座需要更多的理解和妥协。" },
+                virgo: { percent: 95, desc: "金牛座和处女座是完美的组合，互相理解和支持。" },
+                libra: { percent: 80, desc: "金牛座和天秤座是很好的搭配，互相吸引。" },
+                scorpio: { percent: 85, desc: "金牛座和天蝎座充满激情和神秘感。" },
+                sagittarius: { percent: 65, desc: "金牛座和射手座需要更多的沟通和理解。" },
+                capricorn: { percent: 90, desc: "金牛座和摩羯座是很配的一对，稳定而可靠。" },
+                aquarius: { percent: 70, desc: "金牛座和水瓶座需要更多的理解和妥协。" },
+                pisces: { percent: 85, desc: "金牛座和双鱼座是很好的搭配，充满温暖和创造力。" }
+            },
+            gemini: {
+                aries: { percent: 90, desc: "双子座和白羊座是天造地设的一对，充满乐趣和冒险精神。" },
+                taurus: { percent: 75, desc: "双子座和金牛座需要更多的理解和沟通。" },
+                gemini: { percent: 80, desc: "两个双子座在一起会很有趣，但可能会缺乏稳定性。" },
+                cancer: { percent: 70, desc: "双子座和巨蟹座需要更多的理解和妥协。" },
+                leo: { percent: 85, desc: "双子座和狮子座是很好的搭配，充满活力和创造力。" },
+                virgo: { percent: 80, desc: "双子座和处女座可以互相学习，但需要更多的耐心。" },
+                libra: { percent: 95, desc: "双子座和天秤座是完美的组合，充满乐趣和智慧。" },
+                scorpio: { percent: 75, desc: "双子座和天蝎座需要更多的沟通和理解。" },
+                sagittarius: { percent: 90, desc: "双子座和射手座是天生的一对，充满冒险精神。" },
+                capricorn: { percent: 65, desc: "双子座和摩羯座需要更多的理解和妥协。" },
+                aquarius: { percent: 90, desc: "双子座和水瓶座是很好的朋友和伴侣。" },
+                pisces: { percent: 75, desc: "双子座和双鱼座需要更多的沟通和理解。" }
+            },
+            cancer: {
+                aries: { percent: 60, desc: "巨蟹座和白羊座需要更多的理解和沟通才能相处融洽。" },
+                taurus: { percent: 90, desc: "巨蟹座和金牛座是很配的一对，充满温暖和安全感。" },
+                gemini: { percent: 70, desc: "巨蟹座和双子座需要更多的理解和妥协。" },
+                cancer: { percent: 85, desc: "两个巨蟹座在一起会很温馨，但可能会过于敏感。" },
+                leo: { percent: 75, desc: "巨蟹座和狮子座需要更多的沟通和理解。" },
+                virgo: { percent: 85, desc: "巨蟹座和处女座是很好的搭配，互相理解和支持。" },
+                libra: { percent: 70, desc: "巨蟹座和天秤座需要更多的理解和妥协。" },
+                scorpio: { percent: 95, desc: "巨蟹座和天蝎座是完美的组合，充满激情和神秘感。" },
+                sagittarius: { percent: 65, desc: "巨蟹座和射手座需要更多的沟通和理解。" },
+                capricorn: { percent: 80, desc: "巨蟹座和摩羯座是很配的一对，稳定而可靠。" },
+                aquarius: { percent: 65, desc: "巨蟹座和水瓶座需要更多的理解和妥协。" },
+                pisces: { percent: 90, desc: "巨蟹座和双鱼座是很好的搭配，充满温暖和创造力。" }
+            },
+            leo: {
+                aries: { percent: 95, desc: "狮子座和白羊座是完美的组合，充满激情和创造力。" },
+                taurus: { percent: 70, desc: "狮子座和金牛座需要更多的理解和妥协。" },
+                gemini: { percent: 85, desc: "狮子座和双子座是很好的搭配，充满活力和创造力。" },
+                cancer: { percent: 75, desc: "狮子座和巨蟹座需要更多的沟通和理解。" },
+                leo: { percent: 85, desc: "两个狮子座在一起会很有活力，但可能会有竞争。" },
+                virgo: { percent: 80, desc: "狮子座和处女座可以互相学习，但需要更多的耐心。" },
+                libra: { percent: 90, desc: "狮子座和天秤座是天造地设的一对，充满魅力和激情。" },
+                scorpio: { percent: 85, desc: "狮子座和天蝎座充满激情，但也需要注意控制情绪。" },
+                sagittarius: { percent: 90, desc: "狮子座和射手座是天生的一对，充满冒险精神。" },
+                capricorn: { percent: 75, desc: "狮子座和摩羯座需要更多的理解和妥协。" },
+                aquarius: { percent: 80, desc: "狮子座和水瓶座是很好的朋友和伴侣。" },
+                pisces: { percent: 75, desc: "狮子座和双鱼座需要更多的沟通和理解。" }
+            },
+            virgo: {
+                aries: { percent: 75, desc: "处女座和白羊座可以互相学习，但需要更多的耐心。" },
+                taurus: { percent: 95, desc: "处女座和金牛座是完美的组合，互相理解和支持。" },
+                gemini: { percent: 80, desc: "处女座和双子座可以互相学习，但需要更多的耐心。" },
+                cancer: { percent: 85, desc: "处女座和巨蟹座是很好的搭配，互相理解和支持。" },
+                leo: { percent: 80, desc: "处女座和狮子座可以互相学习，但需要更多的耐心。" },
+                virgo: { percent: 85, desc: "两个处女座在一起会很和谐，但可能会过于挑剔。" },
+                libra: { percent: 80, desc: "处女座和天秤座需要更多的理解和妥协。" },
+                scorpio: { percent: 90, desc: "处女座和天蝎座是很配的一对，充满深度和理解。" },
+                sagittarius: { percent: 70, desc: "处女座和射手座需要更多的沟通和理解。" },
+                capricorn: { percent: 90, desc: "处女座和摩羯座是完美的组合，互相支持和理解。" },
+                aquarius: { percent: 75, desc: "处女座和水瓶座需要更多的理解和妥协。" },
+                pisces: { percent: 85, desc: "处女座和双鱼座可以互相学习，但需要更多的耐心。" }
+            },
+            libra: {
+                aries: { percent: 85, desc: "天秤座和白羊座是很好的搭配，互相吸引。" },
+                taurus: { percent: 80, desc: "天秤座和金牛座是很好的搭配，互相吸引。" },
+                gemini: { percent: 95, desc: "天秤座和双子座是完美的组合，充满乐趣和智慧。" },
+                cancer: { percent: 70, desc: "天秤座和巨蟹座需要更多的理解和妥协。" },
+                leo: { percent: 90, desc: "天秤座和狮子座是天造地设的一对，充满魅力和激情。" },
+                virgo: { percent: 80, desc: "天秤座和处女座需要更多的理解和妥协。" },
+                libra: { percent: 85, desc: "两个天秤座在一起会很和谐，但可能会难以做决定。" },
+                scorpio: { percent: 80, desc: "天秤座和天蝎座充满激情，但也需要注意控制情绪。" },
+                sagittarius: { percent: 85, desc: "天秤座和射手座是很好的朋友和伴侣。" },
+                capricorn: { percent: 75, desc: "天秤座和摩羯座需要更多的理解和妥协。" },
+                aquarius: { percent: 90, desc: "天秤座和水瓶座是天造地设的一对，充满智慧和创造力。" },
+                pisces: { percent: 85, desc: "天秤座和双鱼座是很好的搭配，充满浪漫和创造力。" }
+            },
+            scorpio: {
+                aries: { percent: 80, desc: "天蝎座和白羊座充满激情，但也需要注意控制情绪。" },
+                taurus: { percent: 85, desc: "天蝎座和金牛座充满激情和神秘感。" },
+                gemini: { percent: 75, desc: "天蝎座和双子座需要更多的沟通和理解。" },
+                cancer: { percent: 95, desc: "天蝎座和巨蟹座是完美的组合，充满激情和神秘感。" },
+                leo: { percent: 85, desc: "天蝎座和狮子座充满激情，但也需要注意控制情绪。" },
+                virgo: { percent: 90, desc: "天蝎座和处女座是很配的一对，充满深度和理解。" },
+                libra: { percent: 80, desc: "天蝎座和天秤座充满激情，但也需要注意控制情绪。" },
+                scorpio: { percent: 90, desc: "两个天蝎座在一起会很有激情，但也可能会有冲突。" },
+                sagittarius: { percent: 80, desc: "天蝎座和射手座需要更多的沟通和理解。" },
+                capricorn: { percent: 85, desc: "天蝎座和摩羯座是很配的一对，充满深度和理解。" },
+                aquarius: { percent: 75, desc: "天蝎座和水瓶座需要更多的理解和妥协。" },
+                pisces: { percent: 95, desc: "天蝎座和双鱼座是完美的组合，充满激情和神秘感。" }
+            },
+            sagittarius: {
+                aries: { percent: 90, desc: "射手座和白羊座是天生的一对，充满冒险精神。" },
+                taurus: { percent: 65, desc: "射手座和金牛座需要更多的沟通和理解。" },
+                gemini: { percent: 90, desc: "射手座和双子座是天生的一对，充满冒险精神。" },
+                cancer: { percent: 65, desc: "射手座和巨蟹座需要更多的沟通和理解。" },
+                leo: { percent: 90, desc: "射手座和狮子座是天生的一对，充满冒险精神。" },
+                virgo: { percent: 70, desc: "射手座和处女座需要更多的沟通和理解。" },
+                libra: { percent: 85, desc: "射手座和天秤座是很好的朋友和伴侣。" },
+                scorpio: { percent: 80, desc: "射手座和天蝎座需要更多的沟通和理解。" },
+                sagittarius: { percent: 85, desc: "两个射手座在一起会很有活力，但可能会缺乏稳定性。" },
+                capricorn: { percent: 70, desc: "射手座和摩羯座需要更多的理解和妥协。" },
+                aquarius: { percent: 90, desc: "射手座和水瓶座是天生的一对，充满冒险精神。" },
+                pisces: { percent: 75, desc: "射手座和双鱼座需要更多的沟通和理解。" }
+            },
+            capricorn: {
+                aries: { percent: 70, desc: "摩羯座和白羊座需要更多的理解和妥协。" },
+                taurus: { percent: 90, desc: "摩羯座和金牛座是很配的一对，稳定而可靠。" },
+                gemini: { percent: 65, desc: "摩羯座和双子座需要更多的理解和妥协。" },
+                cancer: { percent: 80, desc: "摩羯座和巨蟹座是很配的一对，稳定而可靠。" },
+                leo: { percent: 75, desc: "摩羯座和狮子座需要更多的理解和妥协。" },
+                virgo: { percent: 90, desc: "摩羯座和处女座是完美的组合，互相支持和理解。" },
+                libra: { percent: 75, desc: "摩羯座和天秤座需要更多的理解和妥协。" },
+                scorpio: { percent: 85, desc: "摩羯座和天蝎座是很配的一对，充满深度和理解。" },
+                sagittarius: { percent: 70, desc: "摩羯座和射手座需要更多的理解和妥协。" },
+                capricorn: { percent: 85, desc: "两个摩羯座在一起会很稳定，但可能会缺乏激情。" },
+                aquarius: { percent: 75, desc: "摩羯座和水瓶座需要更多的理解和妥协。" },
+                pisces: { percent: 80, desc: "摩羯座和双鱼座可以互相学习，但需要更多的耐心。" }
+            },
+            aquarius: {
+                aries: { percent: 85, desc: "水瓶座和白羊座是很好的朋友和伴侣。" },
+                taurus: { percent: 70, desc: "水瓶座和金牛座需要更多的理解和妥协。" },
+                gemini: { percent: 90, desc: "水瓶座和双子座是很好的朋友和伴侣。" },
+                cancer: { percent: 65, desc: "水瓶座和巨蟹座需要更多的理解和妥协。" },
+                leo: { percent: 80, desc: "水瓶座和狮子座是很好的朋友和伴侣。" },
+                virgo: { percent: 75, desc: "水瓶座和处女座需要更多的理解和妥协。" },
+                libra: { percent: 90, desc: "水瓶座和天秤座是天造地设的一对，充满智慧和创造力。" },
+                scorpio: { percent: 75, desc: "水瓶座和天蝎座需要更多的理解和妥协。" },
+                sagittarius: { percent: 90, desc: "水瓶座和射手座是天生的一对，充满冒险精神。" },
+                capricorn: { percent: 75, desc: "水瓶座和摩羯座需要更多的理解和妥协。" },
+                aquarius: { percent: 85, desc: "两个水瓶座在一起会很有趣，但可能会缺乏稳定性。" },
+                pisces: { percent: 85, desc: "水瓶座和双鱼座是很好的搭配，充满创造力和理解。" }
+            },
+            pisces: {
+                aries: { percent: 65, desc: "双鱼座和白羊座需要更多的沟通和理解。" },
+                taurus: { percent: 85, desc: "双鱼座和金牛座是很好的搭配，充满温暖和创造力。" },
+                gemini: { percent: 75, desc: "双鱼座和双子座需要更多的沟通和理解。" },
+                cancer: { percent: 90, desc: "双鱼座和巨蟹座是很好的搭配，充满温暖和创造力。" },
+                leo: { percent: 75, desc: "双鱼座和狮子座需要更多的沟通和理解。" },
+                virgo: { percent: 85, desc: "双鱼座和处女座可以互相学习，但需要更多的耐心。" },
+                libra: { percent: 85, desc: "双鱼座和天秤座是很好的搭配，充满浪漫和创造力。" },
+                scorpio: { percent: 95, desc: "双鱼座和天蝎座是完美的组合，充满激情和神秘感。" },
+                sagittarius: { percent: 75, desc: "双鱼座和射手座需要更多的沟通和理解。" },
+                capricorn: { percent: 80, desc: "双鱼座和摩羯座可以互相学习，但需要更多的耐心。" },
+                aquarius: { percent: 85, desc: "双鱼座和水瓶座是很好的搭配，充满创造力和理解。" },
+                pisces: { percent: 85, desc: "两个双鱼座在一起会很浪漫，但可能会过于敏感。" }
+            }
+        };
+        
+        const fortuneScrolls = [
+            { type: "love", text: "今日你的爱情运很旺，可能会遇到令你心动的人。" },
+            { type: "career", text: "工作上会有新的机会，抓住它，你会取得意想不到的成功。" },
+            { type: "health", text: "今天的健康状况很好，适合进行一些户外活动。" },
+            { type: "wealth", text: "财运亨通，可能会有意外之财。" },
+            { type: "friendship", text: "朋友运不错，今天适合和朋友们聚会。" },
+            { type: "study", text: "学习运很好，今天是学习新技能的好日子。" },
+            { type: "travel", text: "有机会去旅行，会有一段愉快的旅程。" },
+            { type: "family", text: "家庭和睦，今天适合和家人共度时光。" },
+            { type: "luck", text: "今天运气很好，做什么事情都会很顺利。" },
+            { type: "happiness", text: "今天心情会很好，做什么事情都充满动力。" }
+        ];
+        
+        // 游戏状态变量
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let memoryScore = 0;
+        let gameStarted = false;
+        let timer;
+        let seconds = 0;
+        
+        // 数据
+        const messages = {
+            sweet: [
+                "和你聊天很开心，希望我们能有更多交流的机会",
+                "你的朋友圈内容很有趣，总能给我带来好心情",
+                "认识你是我的荣幸，希望能更多地了解你",
+                "每次和你聊天都觉得时间过得特别快",
+                "你分享的音乐很好听，我也很喜欢",
+                "谢谢你愿意和我分享你的生活",
+                "和你交流让我觉得很舒服，很自然",
+                "你的见解很独特，总能给我新的启发",
+                "希望我们能有机会一起去做一些有趣的事情",
+                "认识你之后，我发现生活变得更加有趣了"
+            ],
+            cute: [
+                "你今天有没有好好休息呀？工作再忙也要照顾好自己哦",
+                "听说你喜欢旅游，我也很喜欢，希望有机会能听你分享更多旅行故事",
+                "你推荐的那家火锅店我去尝试了，真的很好吃，谢谢你的推荐",
+                "作为生物老师，你一定很有耐心吧？这是很珍贵的品质",
+                "听说你发烧了还坚持去上班，真的很敬业，不过也要注意身体呀",
+                "你分享的美食看起来都很美味，你一定很会享受生活",
+                "你的身高170cm，是我理想中的身高呢",
+                "作为老师，你一定给学生带来了很多知识和快乐吧",
+                "你喜欢分享的习惯很好，让人觉得很温暖",
+                "你的热情大方让人感觉很舒服，和你相处一定很愉快"
+            ],
+            romantic: [
+                "我很欣赏你的善良和敬业，这些品质很吸引人",
+                "和你聊天让我觉得很开心，希望我们能有更多共同话题",
+                "你的笑容一定很迷人，虽然我们还没见过面",
+                "我很佩服你的职业精神，发烧了还坚持工作，真的很了不起",
+                "希望有一天能和你一起去吃火锅，听你分享更多故事",
+                "你的朋友圈照片看起来很有生活气息，让人向往",
+                "我很欣赏你的生活态度，积极向上，充满热情",
+                "希望有机会能和你一起去旅行，探索更多美好的地方",
+                "你的专业是生物学，一定很有趣吧？我很想听你讲讲",
+                "和你交流让我觉得很有意义，希望我们能继续保持联系"
+            ],
+            encouraging: [
+                "你真的很棒，作为老师一定付出了很多努力",
+                "工作再忙也要记得照顾好自己的身体，健康最重要",
+                "相信自己的能力，你已经做得很好了",
+                "你的敬业精神很值得我学习，真的很佩服你",
+                "不要给自己太大压力，适当放松也是很重要的",
+                "你的善良和热情会感染身边的每一个人",
+                "继续保持对生活的热爱，你会越来越优秀的",
+                "你的分享给很多人带来了快乐，包括我",
+                "相信自己的选择，你走的每一步都有意义",
+                "你是一个很特别的人，值得被欣赏和珍惜"
+            ]
+        };
+        
+        const jokes = [
+            "为什么数学书总是很忧郁？因为它有太多的问题。",
+            "我问医生我能不能做剧烈运动，医生说：'你可以做任何运动，只要不是剧烈的。'",
+            "为什么程序员总是分不清万圣节和圣诞节？因为 Oct 31 = Dec 25。",
+            "我告诉我的电脑我需要一个 break，它给了我一个 KitKat。",
+            "为什么科学家不信任原子？因为它们构成了一切。",
+            "我问我的狗：'你想要什么礼物？' 它说：'汪汪汪！' 我想它可能想要一个骨头。",
+            "为什么手机总是很冷？因为它们有太多的应用程序在后台运行。",
+            "我试图抓住 fog，但我 mist 了。",
+            "为什么 scarecrow 赢得了年度最佳员工奖？因为他在他的领域里表现出色。",
+            "我告诉我的妻子她应该embrace her mistakes... 她给了我一个 hug。"
+        ];
+        
+        const questions = [
+            {
+                text: "你最喜欢的颜色是什么？",
+                type: "options",
+                options: ["粉色", "紫色", "蓝色", "绿色", "黄色", "其他"],
+                responses: {
+                    "粉色": "哇，粉色！和你一样可爱呢～就像春天里的樱花，温柔又甜美！🌸",
+                    "紫色": "紫色是神秘又浪漫的颜色呢～和你的气质很配哦！像夜空中的星星，让人着迷～✨",
+                    "蓝色": "蓝色是天空和海洋的颜色，给人平静和安心的感觉～就像你的笑容一样治愈！🌊",
+                    "绿色": "绿色是生命和活力的颜色！喜欢绿色的你一定很热爱生活吧～🌱",
+                    "黄色": "黄色是阳光的颜色！喜欢黄色的你一定很开朗乐观～像小太阳一样温暖！☀️",
+                    "其他": "独特的颜色选择！说明你也是个特别的女孩呢～我很喜欢！😉"
+                }
+            },
+            {
+                text: "你喜欢什么类型的音乐？",
+                type: "options",
+                options: ["流行", "摇滚", "古典", "爵士", "电子", "其他"],
+                responses: {
+                    "流行": "流行音乐很有活力呢！就像你的性格一样充满魅力～🎤",
+                    "摇滚": "摇滚！好酷哦～你一定是个有个性的女孩！🤘",
+                    "古典": "古典音乐很高雅呢～喜欢古典音乐的你一定很有品味！🎻",
+                    "爵士": "爵士音乐很有情调呢～你一定是个浪漫的人！🎷",
+                    "电子": "电子音乐很有节奏感！喜欢电子音乐的你一定很有活力～🎧",
+                    "其他": "独特的音乐品味！说明你是个有个性的女孩～我很喜欢！😉"
+                }
+            },
+            {
+                text: "你最喜欢的季节是？",
+                type: "options",
+                options: ["春天", "夏天", "秋天", "冬天"],
+                responses: {
+                    "春天": "春天是万物复苏的季节！喜欢春天的你一定很温柔吧～🌸",
+                    "夏天": "夏天是热情奔放的季节！喜欢夏天的你一定很开朗～☀️",
+                    "秋天": "秋天是收获的季节！喜欢秋天的你一定很成熟稳重～🍂",
+                    "冬天": "冬天是浪漫的季节！喜欢冬天的你一定很有想象力～❄️"
+                }
+            },
+            {
+                text: "你喜欢吃甜食吗？",
+                type: "options",
+                options: ["非常喜欢", "一般", "不太喜欢", "不喜欢"],
+                responses: {
+                    "非常喜欢": "甜食控一枚！和我一样呢～甜食能让人心情变好，就像你一样能带给人快乐！🍰",
+                    "一般": "适量甜食有益身心～你一定是个很懂得平衡的女孩！😉",
+                    "不太喜欢": "看来你很注重健康呢～真是个自律的好女孩！💪",
+                    "不喜欢": "完全不吃甜食吗？好特别！说明你是个很有原则的人～👍"
+                }
+            },
+            {
+                text: "你最喜欢的动物是什么？",
+                type: "options",
+                options: ["猫", "狗", "兔子", "熊猫", "其他"],
+                responses: {
+                    "猫": "猫咪很可爱呢～喜欢猫咪的你一定很温柔有耐心！🐱",
+                    "狗": "狗狗很忠诚呢～喜欢狗狗的你一定很有爱心！🐶",
+                    "兔子": "兔子好萌啊～喜欢兔子的你一定很可爱！🐰",
+                    "熊猫": "熊猫是国宝呢～喜欢熊猫的你一定很有品味！🐼",
+                    "其他": "独特的选择！说明你是个很有个性的女孩～我很喜欢！😉"
+                }
+            },
+            {
+                text: "你周末喜欢做什么？",
+                type: "custom",
+                response: "哇，听起来很有趣呢！我也很喜欢这样度过周末～如果有机会，真想和你一起体验！😉"
+            },
+            {
+                text: "你有什么特别的爱好吗？",
+                type: "custom",
+                response: "这个爱好很棒呢！能有自己热爱的事情是很幸福的～我很想了解更多！😊"
+            },
+            {
+                text: "你最近看的一部好电影是什么？",
+                type: "custom",
+                response: "这部电影我也听说过！看来我们的品味很相似呢～有空真想和你一起看电影！🎬"
+            },
+            {
+                text: "你最喜欢的食物是什么？",
+                type: "custom",
+                response: "哇，这个我也喜欢！看来我们很有默契呢～有空一定要一起去吃！🍜"
+            },
+            {
+                text: "如果可以去任何地方旅行，你会去哪里？",
+                type: "custom",
+                response: "这个地方听起来很美！我也一直想去呢～如果有机会，真想和你一起去！✈️"
+            }
+        ];
+        
+        const surprises = [
+            "你知道吗？每天早上醒来，我第一个想到的人就是你。",
+            "我偷偷告诉你一个秘密：我真的很喜欢你。",
+            "你笑起来的样子真的很迷人，每次看到都会让我心动。",
+            "我收藏了很多关于你的照片，每次想你的时候就会拿出来看。",
+            "和你聊天是我一天中最期待的事情。",
+            "你是我见过最特别的女孩，你的存在让我的世界变得更加美好。",
+            "我喜欢听你说话，你的声音很温柔，让人感到安心。",
+            "每次和你在一起，时间都过得特别快，我希望可以一直这样下去。",
+            "你有很多优点，但我最喜欢的是你的善良和乐观。",
+            "我真的很幸运能够认识你，你是我生命中的礼物。"
+        ];
+        
+        // 状态变量
+        let currentMessageIndex = 0;
+        let currentMessageCategory = 'sweet';
+        let currentJokeIndex = 0;
+        let currentQuestionIndex = 0;
+        let selectedMood = null;
+        let answers = [];
+        let diaryEntries = JSON.parse(localStorage.getItem('diaryEntries')) || [];
+        let photos = JSON.parse(localStorage.getItem('photos')) || [];
+        let affectionLevel = parseInt(localStorage.getItem('affectionLevel')) || 25;
+        let visitedSections = JSON.parse(localStorage.getItem('visitedSections')) || [];
+        
+        // DOM 元素
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const startJourneyBtn = document.getElementById('start-journey-btn');
+        const surpriseBtn = document.getElementById('surprise-btn');
+        const surpriseModal = document.getElementById('surprise-modal');
+        const closeSurprise = document.getElementById('close-surprise');
+        const surpriseMessage = document.getElementById('surprise-message');
+        const currentMessage = document.getElementById('current-message');
+        const messageBtns = document.querySelectorAll('.message-btn');
+        const prevMessageBtn = document.getElementById('prev-message');
+        const nextMessageBtn = document.getElementById('next-message');
+        const randomMessageBtn = document.getElementById('random-message');
+        const customMessageInput = document.getElementById('custom-message');
+        const addMessageBtn = document.getElementById('add-message');
+        const currentJoke = document.getElementById('current-joke');
+        const randomJokeBtn = document.getElementById('random-joke');
+        const ratingBtns = document.querySelectorAll('.rating-btn');
+        const jokeRating = document.getElementById('joke-rating');
+        const questionText = document.getElementById('question-text');
+        const answerOptions = document.getElementById('answer-options');
+        const customAnswerContainer = document.getElementById('custom-answer-container');
+        const customAnswer = document.getElementById('custom-answer');
+        const prevQuestionBtn = document.getElementById('prev-question');
+        const nextQuestionBtn = document.getElementById('next-question');
+        const submitAnswerBtn = document.getElementById('submit-answer');
+        const answersHistory = document.getElementById('answers-history');
+        const moodIcons = document.querySelectorAll('.mood-icon');
+        const diaryEntry = document.getElementById('diary-entry');
+        const saveDiaryBtn = document.getElementById('save-diary');
+        const uploadPhotoBtn = document.getElementById('upload-photo');
+        const photoInput = document.getElementById('photo-input');
+        const photoPreview = document.getElementById('photo-preview');
+        const previewImage = document.getElementById('preview-image');
+        const photoCaptionContainer = document.getElementById('photo-caption-container');
+        const photoCaption = document.getElementById('photo-caption');
+        const photoGallery = document.getElementById('photo-gallery');
+        const affectionMeter = document.getElementById('affection-meter');
+        const affectionValue = document.getElementById('affection-value');
+        const currentYear = document.getElementById('current-year');
+        
+        // 初始化
+        function init() {
+            // 设置当前年份
+            currentYear.textContent = new Date().getFullYear();
+            
+            // 更新爱心指数
+            updateAffectionMeter();
+            
+            // 初始化移动端菜单
+            mobileMenuButton.addEventListener('click', toggleMobileMenu);
+            
+            // 初始化平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                        
+                        // 如果是移动端，点击后关闭菜单
+                        if (mobileMenu.classList.contains('block')) {
+                            toggleMobileMenu();
+                        }
+                        
+                        // 记录访问的区域
+                        if (!visitedSections.includes(targetId)) {
+                            visitedSections.push(targetId);
+                            localStorage.setItem('visitedSections', JSON.stringify(visitedSections));
+                            increaseAffection(5);
+                        }
+                    }
+                });
+            });
+            
+            // 初始化开始探索按钮
+            startJourneyBtn.addEventListener('click', () => {
+                document.querySelector('a[href="#messages"]').click();
+            });
+            
+            // 初始化惊喜按钮
+            surpriseBtn.addEventListener('click', showSurprise);
+            closeSurprise.addEventListener('click', () => {
+                surpriseModal.classList.add('hidden');
+                createConfetti();
+                increaseAffection(10);
+            });
+            
+            // 初始化暖心话语
+            initMessages();
+            
+            // 初始化幽默笑话
+            initJokes();
+            
+            // 初始化互动问答
+            initQuestions();
+            
+            // 初始化心情日记
+            initDiary();
+            
+            // 初始化照片墙
+            initPhotos();
+            
+            // 初始化滚动动画
+            initScrollAnimations();
+            
+            // 初始化 3D 背景
+            initThreeBackground();
+            
+            // 初始化星星和流星雨背景
+            initStarsBackground();
+            
+            // 初始化日历
+            initCalendar();
+            
+            // 初始化心情图表
+            initMoodChart();
+        }
+        
+        // 移动端菜单切换
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('block');
+        }
+        
+        // 显示惊喜弹窗
+        function showSurprise() {
+            const randomSurprise = surprises[Math.floor(Math.random() * surprises.length)];
+            surpriseMessage.textContent = randomSurprise;
+            surpriseModal.classList.remove('hidden');
+        }
+        
+        // 初始化暖心话语
+        function initMessages() {
+            // 设置初始消息
+            currentMessage.textContent = messages[currentMessageCategory][currentMessageIndex];
+            
+            // 分类按钮点击事件
+            messageBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const category = btn.dataset.category;
+                    currentMessageCategory = category;
+                    currentMessageIndex = 0;
+                    currentMessage.textContent = messages[category][currentMessageIndex];
+                    
+                    // 更新按钮样式
+                    messageBtns.forEach(b => b.classList.remove('bg-opacity-20'));
+                    btn.classList.add('bg-opacity-20');
+                    
+                    // 增加爱心指数
+                    increaseAffection(2);
+                });
+            });
+            
+            // 上一条按钮点击事件
+            prevMessageBtn.addEventListener('click', () => {
+                if (currentMessageIndex > 0) {
+                    currentMessageIndex--;
+                    currentMessage.textContent = messages[currentMessageCategory][currentMessageIndex];
+                }
+            });
+            
+            // 下一条按钮点击事件
+            nextMessageBtn.addEventListener('click', () => {
+                if (currentMessageIndex < messages[currentMessageCategory].length - 1) {
+                    currentMessageIndex++;
+                    currentMessage.textContent = messages[currentMessageCategory][currentMessageIndex];
+                }
+            });
+            
+            // 随机一条按钮点击事件
+            randomMessageBtn.addEventListener('click', () => {
+                const randomCategory = Object.keys(messages)[Math.floor(Math.random() * Object.keys(messages).length)];
+                const randomIndex = Math.floor(Math.random() * messages[randomCategory].length);
+                
+                currentMessageCategory = randomCategory;
+                currentMessageIndex = randomIndex;
+                currentMessage.textContent = messages[randomCategory][randomIndex];
+                
+                // 更新按钮样式
+                messageBtns.forEach(btn => {
+                    if (btn.dataset.category === randomCategory) {
+                        btn.classList.add('bg-opacity-20');
+                    } else {
+                        btn.classList.remove('bg-opacity-20');
+                    }
+                });
+                
+                // 增加爱心指数
+                increaseAffection(2);
+                
+                // 创建爱心动画
+                createHeart();
+            });
+            
+            // 添加自定义消息
+            addMessageBtn.addEventListener('click', () => {
+                const customMsg = customMessageInput.value.trim();
+                if (customMsg) {
+                    messages[currentMessageCategory].push(customMsg);
+                    currentMessageIndex = messages[currentMessageCategory].length - 1;
+                    currentMessage.textContent = customMsg;
+                    customMessageInput.value = '';
+                    
+                    // 增加爱心指数
+                    increaseAffection(5);
+                    
+                    // 创建爱心动画
+                    createHeart();
+                    
+                    // 显示成功提示
+                    showToast('添加成功！');
+                }
+            });
+        }
+        
+        // 初始化幽默笑话
+        function initJokes() {
+            // 设置初始笑话
+            currentJoke.textContent = jokes[currentJokeIndex];
+            
+            // 随机笑话按钮点击事件
+            randomJokeBtn.addEventListener('click', () => {
+                currentJokeIndex = Math.floor(Math.random() * jokes.length);
+                currentJoke.textContent = jokes[currentJokeIndex];
+                jokeRating.textContent = '这个笑话好笑吗？';
+                
+                // 增加爱心指数
+                increaseAffection(1);
+                
+                // 创建爱心动画
+                createHeart();
+            });
+            
+            // 评分按钮点击事件
+            ratingBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const rating = btn.dataset.rating;
+                    
+                    if (rating === 'funny') {
+                        jokeRating.textContent = '太好了，我很高兴能让你开心！';
+                        increaseAffection(3);
+                        createHeart();
+                    } else {
+                        jokeRating.textContent = '好吧，我会努力做得更好的！';
+                    }
+                });
+            });
+        }
+        
+        // 初始化互动问答
+        function initQuestions() {
+            // 下一题按钮点击事件
+            nextQuestionBtn.addEventListener('click', () => {
+                if (currentQuestionIndex < questions.length) {
+                    showQuestion(currentQuestionIndex);
+                    currentQuestionIndex++;
+                    
+                    // 更新按钮状态
+                    prevQuestionBtn.disabled = currentQuestionIndex <= 1;
+                    nextQuestionBtn.disabled = currentQuestionIndex >= questions.length;
+                    submitAnswerBtn.disabled = false;
+                    
+                    // 增加爱心指数
+                    increaseAffection(3);
+                }
+            });
+            
+            // 上一题按钮点击事件
+            prevQuestionBtn.addEventListener('click', () => {
+                if (currentQuestionIndex > 1) {
+                    currentQuestionIndex--;
+                    showQuestion(currentQuestionIndex - 1);
+                    
+                    // 更新按钮状态
+                    prevQuestionBtn.disabled = currentQuestionIndex <= 1;
+                    nextQuestionBtn.disabled = false;
+                    submitAnswerBtn.disabled = false;
+                }
+            });
+            
+            // 提交答案按钮点击事件
+            submitAnswerBtn.addEventListener('click', () => {
+                const question = questions[currentQuestionIndex - 1];
+                let userAnswer;
+                
+                if (question.type === 'options') {
+                    const selectedOption = document.querySelector('input[name="answer"]:checked');
+                    if (!selectedOption) {
+                        showToast('请选择一个选项');
+                        return;
+                    }
+                    userAnswer = selectedOption.value;
+                } else {
+                    userAnswer = customAnswer.value.trim();
+                    if (!userAnswer) {
+                        showToast('请输入你的回答');
+                        return;
+                    }
+                    customAnswer.value = '';
+                }
+                
+                // 保存答案
+                answers.push({
+                    question: question.text,
+                    answer: userAnswer,
+                    date: new Date().toLocaleString()
+                });
+                
+                // 更新历史回答
+                updateAnswersHistory();
+                
+                // 重置选项
+                answerOptions.innerHTML = '';
+                answerOptions.classList.add('hidden');
+                customAnswerContainer.classList.add('hidden');
+                
+                // 更新按钮状态
+                submitAnswerBtn.disabled = true;
+                
+                // 显示成功提示
+                showToast('回答已保存！');
+                
+                // 增加爱心指数
+                increaseAffection(5);
+                
+                // 创建爱心动画
+                createHeart();
+                
+                // 如果是最后一题，显示完成提示
+                if (currentQuestionIndex >= questions.length) {
+                    questionText.textContent = '问答完成！谢谢你的参与 ❤️';
+                    nextQuestionBtn.textContent = '重新开始';
+                    nextQuestionBtn.disabled = false;
+                    nextQuestionBtn.addEventListener('click', () => {
+                        currentQuestionIndex = 0;
+                        questionText.textContent = '点击下方按钮开始问答吧！';
+                        nextQuestionBtn.textContent = '开始问答';
+                        nextQuestionBtn.disabled = false;
+                        prevQuestionBtn.disabled = true;
+                    }, { once: true });
+                }
+            });
+            
+            // 更新历史回答
+            updateAnswersHistory();
+        }
+        
+        // 显示问题
+        function showQuestion(index) {
+            const question = questions[index];
+            questionText.textContent = question.text;
+            
+            if (question.type === 'options') {
+                answerOptions.innerHTML = '';
+                question.options.forEach(option => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'flex items-center';
+                    optionDiv.innerHTML = `
+                        <input type="radio" id="option-${option}" name="answer" value="${option}" class="mr-2">
+                        <label for="option-${option}">${option}</label>
+                    `;
+                    answerOptions.appendChild(optionDiv);
+                });
+                answerOptions.classList.remove('hidden');
+                customAnswerContainer.classList.add('hidden');
+            } else {
+                answerOptions.classList.add('hidden');
+                customAnswerContainer.classList.remove('hidden');
+            }
+        }
+        
+        // 更新历史回答
+        function updateAnswersHistory() {
+            if (answers.length === 0) {
+                answersHistory.innerHTML = '<p class="text-center text-gray-500">暂无回答记录</p>';
+                return;
+            }
+            
+            answersHistory.innerHTML = '';
+            answers.forEach((item, index) => {
+                const answerDiv = document.createElement('div');
+                answerDiv.className = 'mb-4 pb-4 border-b border-gray-100';
+                answerDiv.innerHTML = `
+                    <p class="font-medium">${index + 1}. ${item.question}</p>
+                    <p class="text-primary">${item.answer}</p>
+                    <p class="text-xs text-gray-500">${item.date}</p>
+                `;
+                answersHistory.appendChild(answerDiv);
+            });
+        }
+        
+        // 初始化心情日记
+        function initDiary() {
+            // 心情图标点击事件
+            moodIcons.forEach(icon => {
+                icon.addEventListener('click', () => {
+                    moodIcons.forEach(i => i.classList.remove('selected'));
+                    icon.classList.add('selected');
+                    selectedMood = icon.dataset.mood;
+                    
+                    // 增加爱心指数
+                    increaseAffection(2);
+                });
+            });
+            
+            // 保存日记按钮点击事件
+            saveDiaryBtn.addEventListener('click', () => {
+                const entry = diaryEntry.value.trim();
+                if (!entry) {
+                    showToast('请输入日记内容');
+                    return;
+                }
+                
+                if (!selectedMood) {
+                    showToast('请选择心情');
+                    return;
+                }
+                
+                // 保存日记
+                const today = new Date().toISOString().split('T')[0];
+                diaryEntries.push({
+                    date: today,
+                    mood: selectedMood,
+                    content: entry
+                });
+                
+                localStorage.setItem('diaryEntries', JSON.stringify(diaryEntries));
+                
+                // 重置表单
+                diaryEntry.value = '';
+                moodIcons.forEach(i => i.classList.remove('selected'));
+                selectedMood = null;
+                
+                // 更新日历和图表
+                initCalendar();
+                initMoodChart();
+                
+                // 显示成功提示
+                showToast('日记已保存！');
+                
+                // 增加爱心指数
+                increaseAffection(5);
+                
+                // 创建爱心动画
+                createHeart();
+            });
+        }
+        
+        // 初始化日历
+        function initCalendar() {
+            const calendarGrid = document.querySelector('.grid.grid-cols-7');
+            
+            // 清空日历
+            while (calendarGrid.children.length > 7) {
+                calendarGrid.removeChild(calendarGrid.lastChild);
+            }
+            
+            // 获取当前月份
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+            
+            // 添加空白格子
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'h-10';
+                calendarGrid.appendChild(emptyCell);
+            }
+            
+            // 添加日期格子
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateCell = document.createElement('div');
+                const dateString = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                // 查找当天的日记
+                const entry = diaryEntries.find(e => e.date === dateString);
+                
+                if (entry) {
+                    let moodColor;
+                    switch (entry.mood) {
+                        case 'happy':
+                            moodColor = 'bg-yellow-400';
+                            break;
+                        case 'shy':
+                            moodColor = 'bg-pink-300';
+                            break;
+                        case 'excited':
+                            moodColor = 'bg-purple-400';
+                            break;
+                        case 'love':
+                            moodColor = 'bg-red-400';
+                            break;
+                        default:
+                            moodColor = 'bg-gray-300';
+                    }
+                    
+                    dateCell.className = `h-10 flex items-center justify-center rounded-full ${moodColor} text-white cursor-pointer hover:scale-110 transition-transform`;
+                    dateCell.textContent = day;
+                    
+                    // 添加点击事件查看日记详情
+                    dateCell.addEventListener('click', () => {
+                        showDiaryDetail(entry);
+                    });
+                } else {
+                    dateCell.className = 'h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors';
+                    dateCell.textContent = day;
+                }
+                
+                calendarGrid.appendChild(dateCell);
+            }
+        }
+        
+        // 显示日记详情
+        function showDiaryDetail(entry) {
+            let moodEmoji;
+            switch (entry.mood) {
+                case 'happy':
+                    moodEmoji = '😊';
+                    break;
+                case 'shy':
+                    moodEmoji = '😳';
+                    break;
+                case 'excited':
+                    moodEmoji = '😍';
+                    break;
+                case 'love':
+                    moodEmoji = '❤️';
+                    break;
+                default:
+                    moodEmoji = '😐';
+            }
+            
+            const date = new Date(entry.date);
+            const formattedDate = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+            
+            alert(`${formattedDate} ${moodEmoji}\n\n${entry.content}`);
+        }
+        
+        // 初始化心情图表
+        function initMoodChart() {
+            const ctx = document.getElementById('mood-chart').getContext('2d');
+            
+            // 准备数据
+            const moodData = {
+                happy: 0,
+                shy: 0,
+                excited: 0,
+                love: 0
+            };
+            
+            diaryEntries.forEach(entry => {
+                if (moodData[entry.mood]) {
+                    moodData[entry.mood]++;
+                }
+            });
+            
+            // 创建图表
+            if (window.moodChart) {
+                window.moodChart.destroy();
+            }
+            
+            window.moodChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['开心', '害羞', '兴奋', '爱心'],
+                    datasets: [{
+                        label: '心情分布',
+                        data: [moodData.happy, moodData.shy, moodData.excited, moodData.love],
+                        backgroundColor: [
+                            'rgba(251, 191, 36, 0.7)',
+                            'rgba(252, 165, 165, 0.7)',
+                            'rgba(192, 132, 252, 0.7)',
+                            'rgba(244, 63, 94, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(251, 191, 36)',
+                            'rgb(252, 165, 165)',
+                            'rgb(192, 132, 252)',
+                            'rgb(244, 63, 94)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 初始化照片墙
+        function initPhotos() {
+            // 上传照片按钮点击事件
+            uploadPhotoBtn.addEventListener('click', () => {
+                photoInput.click();
+            });
+            
+            // 照片输入变化事件
+            photoInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        previewImage.src = event.target.result;
+                        photoPreview.classList.remove('hidden');
+                        photoCaptionContainer.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // 监听 photo-caption 的回车事件
+            photoCaption.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    savePhoto();
+                }
+            });
+            
+            // 显示照片墙
+            displayPhotos();
+        }
+        
+        // 保存照片
+        function savePhoto() {
+            const caption = photoCaption.value.trim();
+            const photoUrl = previewImage.src;
+            
+            if (!photoUrl) {
+                showToast('请先选择照片');
+                return;
+            }
+            
+            // 保存照片
+            photos.push({
+                url: photoUrl,
+                caption: caption,
+                date: new Date().toLocaleString()
+            });
+            
+            localStorage.setItem('photos', JSON.stringify(photos));
+            
+            // 重置表单
+            photoInput.value = '';
+            photoPreview.classList.add('hidden');
+            photoCaptionContainer.classList.add('hidden');
+            photoCaption.value = '';
+            
+            // 更新照片墙
+            displayPhotos();
+            
+            // 显示成功提示
+            showToast('照片已保存！');
+            
+            // 增加爱心指数
+            increaseAffection(10);
+            
+            // 创建爱心动画
+            createHeart();
+        }
+        
+        // 显示照片墙
+        function displayPhotos() {
+            if (photos.length === 0) {
+                photoGallery.innerHTML = '<div class="text-center col-span-full text-gray-500 py-8">暂无照片，上传第一张照片吧！</div>';
+                return;
+            }
+            
+            photoGallery.innerHTML = '';
+            photos.forEach((photo, index) => {
+                const photoDiv = document.createElement('div');
+                photoDiv.className = 'relative group card-hover';
+                photoDiv.innerHTML = `
+                    <div class="photo-frame p-2">
+                        <img src="${photo.url}" alt="${photo.caption}" class="w-full h-48 object-cover rounded-lg">
+                    </div>
+                    <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg">
+                        <button class="delete-photo bg-white text-red-500 rounded-full w-8 h-8 flex items-center justify-center" data-index="${index}">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                    ${photo.caption ? `<p class="mt-2 text-sm text-gray-600">${photo.caption}</p>` : ''}
+                    <p class="text-xs text-gray-500">${photo.date}</p>
+                `;
+                photoGallery.appendChild(photoDiv);
+            });
+            
+            // 添加删除照片事件
+            document.querySelectorAll('.delete-photo').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt(e.currentTarget.dataset.index);
+                    photos.splice(index, 1);
+                    localStorage.setItem('photos', JSON.stringify(photos));
+                    displayPhotos();
+                    showToast('照片已删除');
+                });
+            });
+        }
+        
+        // 初始化滚动动画
+        function initScrollAnimations() {
+            const sections = document.querySelectorAll('.section');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        
+                        // 记录访问的区域
+                        const targetId = '#' + entry.target.id;
+                        if (!visitedSections.includes(targetId) && targetId !== '#') {
+                            visitedSections.push(targetId);
+                            localStorage.setItem('visitedSections', JSON.stringify(visitedSections));
+                            increaseAffection(5);
+                        }
+                    }
+                });
+            }, { threshold: 0.1 });
+            
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        }
+        
+        // 初始化音频
+        function initAudio() {
+            const audio = document.getElementById('background-music');
+            const musicToggle = document.getElementById('music-toggle');
+            const mobileMusicToggle = document.getElementById('mobile-music-toggle');
+            
+            // 尝试自动播放（静音状态）
+            audio.play().then(() => {
+                console.log('音频自动播放已开始（静音状态）');
+                // 3秒后自动取消静音
+                setTimeout(() => {
+                    audio.muted = false;
+                    updateMusicButton(true);
+                }, 3000);
+            }).catch(error => {
+                console.log('自动播放被阻止，等待用户交互:', error);
+            });
+            
+            // 音乐开关点击事件
+            function toggleMusic() {
+                if (audio.paused) {
+                    audio.play().then(() => {
+                        // 播放成功后取消静音
+                        audio.muted = false;
+                        updateMusicButton(true);
+                    }).catch(error => {
+                        console.log('播放失败:', error);
+                        // 显示提示
+                        showToast('请点击页面任意位置后再尝试播放音乐');
+                    });
+                } else {
+                    audio.pause();
+                    updateMusicButton(false);
+                }
+            }
+            
+            // 更新音乐按钮状态
+            function updateMusicButton(isPlaying) {
+                if (isPlaying) {
+                    musicToggle.innerHTML = '<i class="fa fa-pause"></i>';
+                    mobileMusicToggle.innerHTML = '<i class="fa fa-pause"></i>';
+                } else {
+                    musicToggle.innerHTML = '<i class="fa fa-music"></i>';
+                    mobileMusicToggle.innerHTML = '<i class="fa fa-music"></i>';
+                }
+            }
+            
+            // 绑定音乐开关事件
+            musicToggle.addEventListener('click', toggleMusic);
+            mobileMusicToggle.addEventListener('click', toggleMusic);
+            
+            // 监听页面任意点击，用于解锁音频
+            document.addEventListener('click', function unlockAudio() {
+                // 尝试播放（如果还没播放）
+                if (audio.paused) {
+                    audio.play().then(() => {
+                        audio.muted = false;
+                        updateMusicButton(true);
+                    }).catch(error => {
+                        console.log('解锁音频失败:', error);
+                    });
+                }
+                
+                // 移除事件监听，只需要一次交互
+                document.removeEventListener('click', unlockAudio);
+            }, { once: true });
+        }
+        
+        // 初始化 3D 背景
+        function initThreeBackground() {
+            const container = document.getElementById('canvas-container');
+            
+            // 创建场景
+            const scene = new THREE.Scene();
+            
+            // 创建相机
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+            
+            // 创建渲染器
+            const renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+            
+            // 创建粒子
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 1500;
+            
+            const posArray = new Float32Array(particlesCount * 3);
+            
+            for (let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 15;
+            }
+            
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            
+            // 创建材质
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.02,
+                color: 0xFF69B4,
+                transparent: true,
+                opacity: 0.8
+            });
+            
+            // 创建粒子系统
+            const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particlesMesh);
+            
+            // 动画
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                particlesMesh.rotation.y += 0.001;
+                
+                renderer.render(scene, camera);
+            }
+            
+            animate();
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+        
+        // 初始化星星和流星雨背景
+        function initStarsBackground() {
+            const starsContainer = document.getElementById('stars-container');
+            
+            // 创建星星
+            for (let i = 0; i < 150; i++) {
+                createStar(starsContainer);
+            }
+            
+            // 定时创建流星雨
+            setInterval(() => {
+                createMeteor(starsContainer);
+            }, 2000);
+        }
+        
+        // 创建星星
+        function createStar(container) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            
+            // 随机大小
+            const size = Math.random() * 3;
+            
+            // 随机位置
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            
+            // 随机动画延迟和持续时间
+            const delay = Math.random() * 5;
+            const duration = 3 + Math.random() * 7;
+            
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.left = `${x}%`;
+            star.style.top = `${y}%`;
+            star.style.animationDelay = `${delay}s`;
+            star.style.animationDuration = `${duration}s`;
+            
+            container.appendChild(star);
+        }
+        
+        // 创建流星雨
+        function createMeteor(container) {
+            const meteor = document.createElement('div');
+            meteor.className = 'meteor';
+            
+            // 随机长度
+            const length = 50 + Math.random() * 150;
+            
+            // 随机位置（从右侧出现）
+            const y = Math.random() * 50;
+            
+            // 随机动画持续时间
+            const duration = 1 + Math.random() * 2;
+            
+            meteor.style.height = `${length}px`;
+            meteor.style.right = '-10px';
+            meteor.style.top = `${y}%`;
+            meteor.style.animationDuration = `${duration}s`;
+            
+            container.appendChild(meteor);
+            
+            // 动画结束后移除
+            setTimeout(() => {
+                meteor.remove();
+            }, duration * 1000);
+        }
+        
+        // 创建爱心动画
+        function createHeart() {
+            const heartContainer = document.getElementById('heartContainer');
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            
+            // 随机位置
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            
+            // 随机动画持续时间
+            const duration = 3 + Math.random() * 2;
+            
+            heart.style.left = `${x}px`;
+            heart.style.top = `${y}px`;
+            heart.style.animationDuration = `${duration}s`;
+            
+            heartContainer.appendChild(heart);
+            
+            // 动画结束后移除
+            setTimeout(() => {
+                heart.remove();
+            }, duration * 1000);
+        }
+        
+        // 创建庆祝效果
+        function createConfetti() {
+            const confettiContainer = document.getElementById('confettiContainer');
+            
+            // 创建 100 个纸屑
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                // 随机位置
+                const x = Math.random() * window.innerWidth;
+                
+                // 随机颜色
+                const colors = ['#FF69B4', '#9370DB', '#FFB6C1', '#FFD700', '#FF6347'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                // 随机动画持续时间
+                const duration = 2 + Math.random() * 3;
+                
+                // 随机大小
+                const size = 5 + Math.random() * 10;
+                
+                confetti.style.left = `${x}px`;
+                confetti.style.backgroundColor = color;
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                confetti.style.animationDuration = `${duration}s`;
+                
+                confettiContainer.appendChild(confetti);
+                
+                // 动画结束后移除
+                setTimeout(() => {
+                    confetti.remove();
+                }, duration * 1000);
+            }
+        }
+        
+        // 更新爱心指数
+        function updateAffectionMeter() {
+            affectionMeter.style.width = `${affectionLevel}%`;
+            affectionValue.textContent = `${affectionLevel}%`;
+            
+            // 保存到本地存储
+            localStorage.setItem('affectionLevel', affectionLevel);
+        }
+        
+        // 增加爱心指数
+        function increaseAffection(amount) {
+            affectionLevel = Math.min(100, affectionLevel + amount);
+            updateAffectionMeter();
+            
+            // 如果达到 100%，显示庆祝效果
+            if (affectionLevel >= 100) {
+                setTimeout(() => {
+                    createConfetti();
+                    showToast('恭喜！心动指数已满格 ❤️');
+                }, 500);
+            }
+        }
+        
+        // 显示提示消息
+        function showToast(message) {
+            // 创建提示元素
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(toast);
+            
+            // 淡出动画
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.5s ease';
+                
+                // 动画结束后移除
+                setTimeout(() => {
+                    toast.remove();
+                }, 500);
+            }, 2000);
+        }
+        
+        // 初始化趣味互动游戏
+        function initFunGames() {
+            // 初始化数字配对游戏
+            initMemoryGame();
+            
+            // 初始化真心话大冒险
+            initTruthOrDare();
+            
+            // 初始化星座配对
+            initZodiacMatch();
+            
+            // 初始化幸运签
+            initFortuneScroll();
+            
+            // 初始化性格测试
+            initPersonalityTest();
+        }
+        
+        // 初始化数字配对游戏
+        function initMemoryGame() {
+            const memoryGame = document.getElementById('memory-game');
+            const startMemoryGameBtn = document.getElementById('start-memory-game');
+            const memoryScoreElement = document.getElementById('memory-score');
+            
+            // 开始游戏按钮点击事件
+            startMemoryGameBtn.addEventListener('click', () => {
+                if (!gameStarted) {
+                    startMemoryGame();
+                } else {
+                    resetMemoryGame();
+                }
+            });
+            
+            // 开始游戏
+            function startMemoryGame() {
+                gameStarted = true;
+                startMemoryGameBtn.textContent = '重新开始';
+                memoryScore = 0;
+                memoryScoreElement.textContent = memoryScore;
+                matchedPairs = 0;
+                flippedCards = [];
+                
+                // 打乱卡片顺序
+                const shuffledCards = [...memoryCards].sort(() => Math.random() - 0.5);
+                
+                // 创建卡片
+                memoryGame.innerHTML = '';
+                shuffledCards.forEach((card, index) => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'memory-card bg-gradient-to-r from-primary to-secondary rounded-lg h-16 flex items-center justify-center cursor-pointer transform transition-transform hover:scale-105';
+                    cardElement.dataset.value = card;
+                    cardElement.dataset.index = index;
+                    cardElement.innerHTML = '<span class="text-white text-xl font-bold hidden">?</span>';
+                    
+                    cardElement.addEventListener('click', () => flipCard(cardElement));
+                    memoryGame.appendChild(cardElement);
+                });
+                
+                // 开始计时
+                seconds = 0;
+                clearInterval(timer);
+                timer = setInterval(() => {
+                    seconds++;
+                }, 1000);
+            }
+            
+            // 翻牌
+            function flipCard(card) {
+                // 如果卡片已经翻开或者已经匹配，则不做任何操作
+                if (card.classList.contains('flipped') || card.classList.contains('matched') || flippedCards.length >= 2) {
+                    return;
+                }
+                
+                // 翻开卡片
+                card.classList.add('flipped');
+                card.innerHTML = `<span class="text-white text-xl font-bold">${card.dataset.value}</span>`;
+                flippedCards.push(card);
+                
+                // 如果翻开了两张卡片，检查是否匹配
+                if (flippedCards.length === 2) {
+                    setTimeout(checkMatch, 1000);
+                }
+            }
+            
+            // 检查匹配
+            function checkMatch() {
+                const card1 = flippedCards[0];
+                const card2 = flippedCards[1];
+                
+                if (card1.dataset.value === card2.dataset.value) {
+                    // 匹配成功
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    matchedPairs++;
+                    memoryScore += 10;
+                    memoryScoreElement.textContent = memoryScore;
+                    
+                    // 创建爱心动画
+                    createHeart();
+                    
+                    // 检查游戏是否结束
+                    if (matchedPairs === memoryCards.length / 2) {
+                        clearInterval(timer);
+                        setTimeout(() => {
+                            alert(`恭喜你完成了游戏！用时: ${seconds}秒，得分: ${memoryScore}`);
+                            increaseAffection(10);
+                        }, 500);
+                    }
+                } else {
+                    // 匹配失败，翻回卡片
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    card1.innerHTML = '<span class="text-white text-xl font-bold hidden">?</span>';
+                    card2.innerHTML = '<span class="text-white text-xl font-bold hidden">?</span>';
+                    memoryScore = Math.max(0, memoryScore - 2);
+                    memoryScoreElement.textContent = memoryScore;
+                }
+                
+                flippedCards = [];
+            }
+            
+            // 重置游戏
+            function resetMemoryGame() {
+                clearInterval(timer);
+                gameStarted = false;
+                startMemoryGameBtn.textContent = '开始游戏';
+                memoryGame.innerHTML = '';
+                memoryScoreElement.textContent = '0';
+            }
+        }
+        
+        // 初始化真心话大冒险
+        function initTruthOrDare() {
+            const truthBtn = document.getElementById('truth-btn');
+            const dareBtn = document.getElementById('dare-btn');
+            const truthDareText = document.getElementById('truth-dare-text');
+            
+            // 真心话按钮点击事件
+            truthBtn.addEventListener('click', () => {
+                const randomQuestion = truthQuestions[Math.floor(Math.random() * truthQuestions.length)];
+                truthDareText.textContent = randomQuestion;
+                
+                // 增加爱心指数
+                increaseAffection(3);
+                
+                // 创建爱心动画
+                createHeart();
+            });
+            
+            // 大冒险按钮点击事件
+            dareBtn.addEventListener('click', () => {
+                const randomTask = dareTasks[Math.floor(Math.random() * dareTasks.length)];
+                truthDareText.textContent = randomTask;
+                
+                // 增加爱心指数
+                increaseAffection(5);
+                
+                // 创建爱心动画
+                createHeart();
+            });
+        }
+        
+        // 初始化星座配对
+        function initZodiacMatch() {
+            const yourZodiac = document.getElementById('your-zodiac');
+            const hisZodiac = document.getElementById('his-zodiac');
+            const matchZodiacBtn = document.getElementById('match-zodiac');
+            const zodiacResult = document.getElementById('zodiac-result');
+            const zodiacPercentage = document.getElementById('zodiac-percentage');
+            const zodiacDescription = document.getElementById('zodiac-description');
+            
+            // 设置默认值
+            yourZodiac.value = 'libra'; // 天秤座
+            hisZodiac.value = 'leo'; // 狮子座
+            
+            // 开始配对按钮点击事件
+            matchZodiacBtn.addEventListener('click', () => {
+                const yourSign = yourZodiac.value;
+                const hisSign = hisZodiac.value;
+                
+                if (!yourSign || !hisSign) {
+                    showToast('请选择两个星座');
+                    return;
+                }
+                
+                // 获取配对结果
+                const matchResult = zodiacMatches[yourSign][hisSign];
+                
+                // 显示结果
+                zodiacPercentage.textContent = `${matchResult.percent}%`;
+                zodiacDescription.textContent = matchResult.desc;
+                zodiacResult.classList.remove('hidden');
+                
+                // 增加爱心指数
+                increaseAffection(5);
+                
+                // 创建爱心动画
+                createHeart();
+                
+                // 如果匹配度很高，显示庆祝效果
+                if (matchResult.percent >= 90) {
+                    setTimeout(() => {
+                        createConfetti();
+                    }, 1000);
+                }
+            });
+        }
+        
+        // 初始化幸运签
+        function initFortuneScroll() {
+            const drawFortuneBtn = document.getElementById('draw-fortune');
+            const fortuneScroll = document.getElementById('fortune-scroll');
+            
+            // 抽取幸运签按钮点击事件
+            drawFortuneBtn.addEventListener('click', () => {
+                // 显示抽取动画
+                fortuneScroll.innerHTML = '<div class="animate-spin"><i class="fa fa-refresh text-3xl text-primary"></i></div>';
+                
+                // 延迟显示结果
+                setTimeout(() => {
+                    const randomScroll = fortuneScrolls[Math.floor(Math.random() * fortuneScrolls.length)];
+                    
+                    let iconClass;
+                    switch (randomScroll.type) {
+                        case 'love':
+                            iconClass = 'fa-heart';
+                            break;
+                        case 'career':
+                            iconClass = 'fa-briefcase';
+                            break;
+                        case 'health':
+                            iconClass = 'fa-heartbeat';
+                            break;
+                        case 'wealth':
+                            iconClass = 'fa-money';
+                            break;
+                        case 'friendship':
+                            iconClass = 'fa-users';
+                            break;
+                        case 'study':
+                            iconClass = 'fa-book';
+                            break;
+                        case 'travel':
+                            iconClass = 'fa-plane';
+                            break;
+                        case 'family':
+                            iconClass = 'fa-home';
+                            break;
+                        case 'luck':
+                            iconClass = 'fa-star';
+                            break;
+                        case 'happiness':
+                            iconClass = 'fa-smile-o';
+                            break;
+                        default:
+                            iconClass = 'fa-ticket';
+                    }
+                    
+                    fortuneScroll.innerHTML = `
+                        <div class="flex flex-col items-center">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center mb-4">
+                                <i class="fa ${iconClass} text-white text-2xl"></i>
+                            </div>
+                            <p class="text-lg font-medium">${randomScroll.text}</p>
+                        </div>
+                    `;
+                    
+                    // 增加爱心指数
+                    increaseAffection(3);
+                    
+                    // 创建爱心动画
+                    createHeart();
+                }, 1000);
+            });
+        }
+        
+        // 初始化性格测试
+        function initPersonalityTest() {
+            const startTestBtn = document.getElementById('start-test');
+            const testStart = document.getElementById('test-start');
+            const testQuestions = document.getElementById('test-questions');
+            const testResult = document.getElementById('test-result');
+            const questionText = document.getElementById('question-text-personality');
+            const questionProgress = document.getElementById('question-progress');
+            const questionContent = document.getElementById('personality-question-content');
+            const optionsContainer = document.getElementById('personality-options');
+            const prevQuestionBtn = document.getElementById('prev-personality-question');
+            const nextQuestionBtn = document.getElementById('next-personality-question');
+            const retryTestBtn = document.getElementById('retry-test');
+            const shareResultBtn = document.getElementById('share-result');
+            const resultIcon = document.getElementById('result-icon');
+            const resultTitle = document.getElementById('result-title');
+            const resultType = document.getElementById('result-type');
+            const resultDescription = document.getElementById('result-description');
+            const resultStrengths = document.getElementById('result-strengths');
+            const resultGifts = document.getElementById('result-gifts');
+            
+            // 性格测试问题
+            const personalityQuestions = [
+                {
+                    text: "在朋友聚会中，你通常是：",
+                    options: [
+                        "活跃气氛的中心人物",
+                        "安静观察的人",
+                        "与几个人深入交流的人",
+                        "根据场合变化的人"
+                    ]
+                },
+                {
+                    text: "当你遇到困难时，你倾向于：",
+                    options: [
+                        "直接面对并解决问题",
+                        "寻求他人的帮助",
+                        "冷静分析后再行动",
+                        "暂时放下，稍后再处理"
+                    ]
+                },
+                {
+                    text: "你更喜欢的休闲方式是：",
+                    options: [
+                        "参加户外活动或运动",
+                        "在家看书或看电影",
+                        "与朋友聚会",
+                        "尝试新的事物或爱好"
+                    ]
+                },
+                {
+                    text: "在工作中，你更注重：",
+                    options: [
+                        "完成任务的速度",
+                        "工作的质量和细节",
+                        "与团队的合作",
+                        "创新和新想法"
+                    ]
+                },
+                {
+                    text: "你做决定时通常会：",
+                    options: [
+                        "凭直觉快速决定",
+                        "仔细分析所有信息",
+                        "考虑他人的感受和意见",
+                        "权衡利弊后决定"
+                    ]
+                }
+            ];
+            
+            // 性格类型
+            const personalityTypes = [
+                {
+                    name: "阳光开朗型",
+                    icon: "fa-sun-o",
+                    description: "你是一个乐观开朗的人，总是充满活力和正能量。你喜欢与人交往，善于表达自己，能够带给周围的人快乐。",
+                    strengths: ["乐观积极", "善于沟通", "富有创造力", "适应能力强"],
+                    gifts: ["鲜花或植物", "有趣的书籍或电影", "社交活动门票", "个性化饰品"]
+                },
+                {
+                    name: "温柔体贴型",
+                    icon: "fa-heart",
+                    description: "你是一个温柔体贴的人，善于关心和照顾他人。你心思细腻，能够敏锐地察觉到他人的需要，并给予帮助和支持。",
+                    strengths: ["善解人意", "有同理心", "乐于助人", "富有耐心"],
+                    gifts: ["手工制品", "舒适的家居用品", "SPA或放松体验", "个性化相册"]
+                },
+                {
+                    name: "理性分析型",
+                    icon: "fa-brain",
+                    description: "你是一个理性分析的人，善于思考和解决问题。你逻辑思维能力强，做事有条理，能够在复杂的情况下保持冷静。",
+                    strengths: ["逻辑思维", "分析能力强", "做事有条理", "冷静理智"],
+                    gifts: ["书籍或知识产品", "科技产品", "拼图或策略游戏", "高质量文具"]
+                },
+                {
+                    name: "冒险探索型",
+                    icon: "fa-rocket",
+                    description: "你是一个喜欢冒险和探索的人，对未知的事物充满好奇。你勇于尝试新事物，喜欢挑战自己，追求刺激和新鲜感。",
+                    strengths: ["勇于冒险", "富有好奇心", "适应性强", "敢于挑战"],
+                    gifts: ["旅行相关产品", "户外装备", "体验类礼物", "探险书籍"]
+                },
+                {
+                    name: "平衡和谐型",
+                    icon: "fa-balance-scale",
+                    description: "你是一个追求平衡和谐的人，善于在不同的观点和需求之间找到平衡点。你重视和谐的人际关系，做事稳重可靠。",
+                    strengths: ["稳重可靠", "善于协调", "有责任感", "做事周全"],
+                    gifts: ["家居装饰品", "茶叶或咖啡", "平衡生活类书籍", "高质量的日常用品"]
+                }
+            ];
+            
+            let currentQuestionIndex = 0;
+            let answers = [];
+            
+            // 开始测试按钮点击事件
+            startTestBtn.addEventListener('click', () => {
+                testStart.classList.add('hidden');
+                testQuestions.classList.remove('hidden');
+                showQuestion(0);
+            });
+            
+            // 上一题按钮点击事件
+            prevQuestionBtn.addEventListener('click', () => {
+                if (currentQuestionIndex > 0) {
+                    currentQuestionIndex--;
+                    showQuestion(currentQuestionIndex);
+                }
+            });
+            
+            // 下一题按钮点击事件
+            nextQuestionBtn.addEventListener('click', () => {
+                if (currentQuestionIndex < personalityQuestions.length - 1) {
+                    // 检查是否选择了选项
+                    const selectedOption = document.querySelector('input[name="personality-option"]:checked');
+                    if (!selectedOption) {
+                        showToast('请选择一个选项');
+                        return;
+                    }
+                    
+                    // 保存答案
+                    answers[currentQuestionIndex] = parseInt(selectedOption.value);
+                    
+                    currentQuestionIndex++;
+                    showQuestion(currentQuestionIndex);
+                } else {
+                    // 最后一题，提交答案
+                    const selectedOption = document.querySelector('input[name="personality-option"]:checked');
+                    if (!selectedOption) {
+                        showToast('请选择一个选项');
+                        return;
+                    }
+                    
+                    // 保存答案
+                    answers[currentQuestionIndex] = parseInt(selectedOption.value);
+                    
+                    // 计算结果
+                    showResult();
+                }
+            });
+            
+            // 重新测试按钮点击事件
+            retryTestBtn.addEventListener('click', () => {
+                testResult.classList.add('hidden');
+                testStart.classList.remove('hidden');
+                currentQuestionIndex = 0;
+                answers = [];
+            });
+            
+            // 分享结果按钮点击事件
+            shareResultBtn.addEventListener('click', () => {
+                showToast('结果已复制到剪贴板！');
+                // 这里可以添加复制到剪贴板的功能
+            });
+            
+            // 显示问题
+            function showQuestion(index) {
+                const question = personalityQuestions[index];
+                
+                questionText.textContent = question.text;
+                questionProgress.textContent = `${index + 1}/${personalityQuestions.length}`;
+                questionContent.textContent = question.text;
+                
+                // 创建选项
+                optionsContainer.innerHTML = '';
+                question.options.forEach((option, i) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'flex items-center';
+                    optionDiv.innerHTML = `
+                        <input type="radio" id="personality-option-${i}" name="personality-option" value="${i}" class="mr-2" ${answers[index] === i ? 'checked' : ''}>
+                        <label for="personality-option-${i}">${option}</label>
+                    `;
+                    optionsContainer.appendChild(optionDiv);
+                });
+                
+                // 更新按钮状态
+                prevQuestionBtn.disabled = index === 0;
+                nextQuestionBtn.textContent = index === personalityQuestions.length - 1 ? '查看结果' : '下一题';
+            }
+            
+            // 显示结果
+            function showResult() {
+                testQuestions.classList.add('hidden');
+                testResult.classList.remove('hidden');
+                
+                // 计算得分（这里简化处理，实际应用中可以根据更复杂的算法计算）
+                const totalScore = answers.reduce((sum, score) => sum + score, 0);
+                const typeIndex = totalScore % personalityTypes.length;
+                const personalityType = personalityTypes[typeIndex];
+                
+                // 显示结果
+                resultIcon.innerHTML = `<i class="fa ${personalityType.icon} text-white text-4xl"></i>`;
+                resultTitle.textContent = '测试结果';
+                resultType.textContent = `你是 ${personalityType.name}`;
+                resultDescription.textContent = personalityType.description;
+                
+                // 显示优点
+                resultStrengths.innerHTML = '';
+                personalityType.strengths.forEach(strength => {
+                    const li = document.createElement('li');
+                    li.textContent = strength;
+                    resultStrengths.appendChild(li);
+                });
+                
+                // 显示适合的礼物
+                resultGifts.innerHTML = '';
+                personalityType.gifts.forEach(gift => {
+                    const li = document.createElement('li');
+                    li.textContent = gift;
+                    resultGifts.appendChild(li);
+                });
+                
+                // 增加爱心指数
+                increaseAffection(10);
+                
+                // 创建庆祝效果
+                createConfetti();
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            init();
+            initFunGames();
+        });
+    </script>
+</body>
+</html>
